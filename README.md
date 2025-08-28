@@ -6,13 +6,13 @@ sentiment_analyzer.pkl → [Download here](https://drive.google.com/file/d/1RgnE
 
 Steps for someone else to run your project
 
-Clone your repo:
+1. Clone your repo:
 
 git clone https://github.com/faizan1317/Social_Watch-Cybesheild-Hackathon.git
 cd Social_Watch-Cybesheild-Hackathon
 
 
-Create a new virtual environment (they can name it anything):
+2. Create a new virtual environment (they can name it anything):
 
 python -m venv real
 
@@ -28,21 +28,21 @@ On macOS/Linux:
 
 source real/bin/activate
 
-then 
+3. open folder 
 
 cd haga
 
 
-Install dependencies:
+4. Install dependencies:
 
 pip install -r requirements.txt
 
 
-Apply migrations:
+5. Apply migrations:
 
 python manage.py migrate
 
 
-Run the project:
+6. Run the project:
 
 python manage.py runserver
