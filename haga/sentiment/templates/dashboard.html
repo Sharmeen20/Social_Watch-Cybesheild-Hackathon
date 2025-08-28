@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard - Sentiment Analysis</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+
+<style>
+    
+/* --- styles.css --- */
+
+/* Google Fonts & Font Awesome Icons */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+
+/* Keyframe Animations */
+@keyframes gradient-animation {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+    100% { transform: translateY(0px); }
+}
+
+:root {
+    --sidebar-bg: #2c3e50;
+    --main-bg: #f5f6fa;
+    --card-bg: rgba(255, 255, 255, 0.85);
+    --text-color: #34495e;
+    --text-light: #aeb6bf;
+    --text-light-hover: #ffffff;
+    --accent-color: #e73c7e;
+    --accent-hover: #ee7752;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --sidebar-width: 250px;
+}
+
+/* --- General & Layout --- */
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    color: var(--text-color);
+    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+    background-size: 400% 400%;
+    animation: gradient-animation 18s ease infinite;
+    overflow-x: hidden;
+}
+
+/* --- Floating Icons --- */
+.floating-icons {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+.floating-icons i {
+    position: absolute;
+    color: rgba(255, 255, 255, 0.15);
+    font-size: 50px;
+    animation: float 10s infinite ease-in-out;
+}
+.floating-icons i:nth-child(1) { top: 10%; left: 15%; animation-duration: 12s; }
+.floating-icons i:nth-child(2) { top: 20%; left: 80%; animation-duration: 8s; }
+.floating-icons i:nth-child(3) { top: 70%; left: 10%; animation-duration: 15s; }
+.floating-icons i:nth-child(4) { top: 80%; left: 90%; animation-duration: 9s; }
+.floating-icons i:nth-child(5) { top: 40%; left: 50%; animation-duration: 11s; }
+
+/* --- Sidebar Container & Menu Icon --- */
+.sidebar-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    z-index: 1000;
+}
+.menu-icon {
+    padding: 1rem;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 1001;
+    text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+.sidebar {
+    width: var(--sidebar-width);
+    background-color: var(--sidebar-bg);
+    height: 100%;
+    padding-top: 1.5rem;
+    transform: translateX(-100%);
+    transition: transform 0.4s ease;
+}
+.sidebar-container.is-open .sidebar {
+    transform: translateX(0);
+}
+.sidebar-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-light-hover);
+}
+.sidebar nav ul { list-style-type: none; padding: 0; margin: 0; }
+.sidebar nav a {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    color: var(--text-light);
+    text-decoration: none;
+    padding: 1rem 1.5rem;
+    transition: all 0.3s ease;
+}
+.sidebar nav a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-light-hover);
+    transform: translateX(10px);
+}
+.sidebar nav li.active > a {
+    background-color: rgba(231, 60, 126, 0.2);
+    color: var(--text-light-hover);
+    border-right: 4px solid var(--accent-color);
+}
+
+/* --- Main Content --- */
+.main-content {
+    /* UPDATED: Increased horizontal padding for more side margin */
+    padding: 2rem 4rem; 
+    margin-left: 70px;
+    width: calc(100% - 70px - 8rem); /* Adjusted width to account for new padding */
+    transition: margin-left 0.4s ease;
+}
+.sidebar-container.is-open ~ .main-content {
+    margin-left: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width) - 8rem); /* Adjusted width */
+}
+.page-header {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    color: white;
+    text-shadow: 0 2px 5px rgba(0,0,0);
+}
+
+/* --- Card & Component Styles --- */
+.card {
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    padding: 1.5rem;
+    /* UPDATED: Changed back to a subtle radius for a rectangular look */
+    border-radius: 12px; 
+    box-shadow: 0 8px 30px var(--shadow-color);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 2rem;
+}
+select, textarea, button {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    padding: 0.75rem;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    width: 100%;
+    box-sizing: border-box;
+}
+button {
+    background: linear-gradient(45deg, var(--accent-color), var(--accent-hover));
+    color: white;
+    border: none;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* --- Chart Grid --- */
+.charts-grid {
+    display: grid;
+    /* UPDATED: Changed to a single column layout */
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+.charts-grid h2 { text-align: center; font-size: 1.1rem; }
+.result { margin-top: 1rem; font-weight: bold; text-align: center; }
+
+/* --- Responsive Design --- */
+@media (max-width: 768px) {
+    :root {
+        --sidebar-width: 80vw;
+    }
+    .main-content, .sidebar-container.is-open ~ .main-content {
+        margin-left: 0;
+        /* Adjusted padding and width for mobile */
+        padding: 1rem;
+        padding-top: 5rem;
+        width: calc(100% - 2rem);
+        box-sizing: border-box;
+    }
+    .page-header {
+        font-size: 1.5rem;
+    }
+    .floating-icons i {
+        font-size: 30px;
+    }
+}
+
+.filter-card {
+    max-width: 200px; /* Sets a maximum width for the card */
+    margin-left: auto;  /* Centers the card horizontally */
+    margin-right: auto; /* Centers the card horizontally */
+}
+
+</style>
+
+<body>
+    <div class="floating-icons">
+        <i class="fas fa-chart-pie"></i>
+        <i class="fas fa-comment-dots"></i>
+        <i class="fas fa-database"></i>
+        <i class="fas fa-magnifying-glass-chart"></i>
+        <i class="fas fa-robot"></i>
+    </div>
+
+    <div class="sidebar-container">
+        <div class="menu-icon"><i class="fas fa-bars"></i></div>
+        <aside class="sidebar">
+            <div class="sidebar-header">InsightDash</div>
+            <nav>
+                <ul>
+                    <li><a href="{% url 'ha' %}"><i class="fas fa-home"></i> Home</a></li>
+                    <li class="active"><a href="{% url 'dash' %}"i class="fas fa-chart-bar"></i> Dashboard</a></li>
+                    <li><a href="{% url 'model' %}"><i class="fas fa-brain"></i> Sentiment Model</a></li>
+                </ul>
+            </nav>
+        </aside>
+    </div>
+
+    <main class="main-content">
+        <h1 class="page-header">Sentiment Analysis Dashboard</h1>
+        
+        <div class="card filter-card">
+            <form method="get" action="">
+                <label for="district" style="font-weight: 600;">Filter by District:</label>
+                <select name="district" id="district" onchange="this.form.submit()">
+                    {% for district in districts_list %}
+                        <option value="{{ district }}" {% if selected_district == district %}selected{% endif %}>{{ district|title }}</option>
+                    {% endfor %}
+                </select>
+            <!-- </form> -->
+
+            
+        <label for="metric" style="font-weight: 600; margin-top:10px; display:block;">Select Metric:</label>
+        <select name="metric" id="metric" onchange="this.form.submit()">
+            <option value="Negative" {% if metric == "Negative" %}selected{% endif %}>Negative Comments</option>
+            <option value="Positive" {% if metric == "Positive" %}selected{% endif %}>Positive Comments</option>
+            <option value="Neutral" {% if metric == "Neutral" %}selected{% endif %}>Neutral Comments</option>
+            <option value="Likes" {% if metric == "Likes" %}selected{% endif %}>Likes</option>
+        </select>
+    </form>
+        </div>
+
+        <div class="charts-grid">
+            <div class="card">
+                <h2>{{ metric }} per District</h2>
+                <div id="metric-map" class="plotly-chart-container">{{ map_html|safe }}</div>
+            </div>
+            <div class="card">
+                <h2>Average Sentiment per month</h2>
+                <div id="timeseries" class="plotly-chart-container">{{ graph_time_series|safe }}</div>
+            </div>
+            <div class="card">
+                <h2>Overall Sentiment Distribution</h2>
+                <div id="pie" class="plotly-chart-container">{{ graph_overall_pie|safe }}</div>
+            </div>
+            <div class="card">
+                <h2>Engagement for {{ selected_district|title }}</h2>
+                <div id="district-bar" class="plotly-chart-container">{{ graph_district_bar|safe }}</div>
+            </div>
+            <div class="card">
+                <h2>Sentiment for {{ selected_district|title }}</h2>
+                <div id="district-pie" class="plotly-chart-container">{{ graph_district_pie|safe }}</div>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        const menuIcon = document.querySelector('.menu-icon');
+        const sidebarContainer = document.querySelector('.sidebar-container');
+        const mainContent = document.querySelector('.main-content');
+
+        // Event listener to toggle the menu on icon click
+        menuIcon.addEventListener('click', (event) => {
+            event.stopPropagation(); 
+            sidebarContainer.classList.toggle('is-open');
+        });
+
+        // Event listener for the whole page to close the menu
+        document.addEventListener('click', (event) => {
+            if (sidebarContainer.classList.contains('is-open') && !sidebarContainer.contains(event.target)) {
+                sidebarContainer.classList.remove('is-open');
+            }
+        });
+
+        // Function to find and resize all plotly charts
+        function resizePlotlyCharts() {
+            const allPlotlyCharts = document.querySelectorAll('.plotly-chart-container');
+            allPlotlyCharts.forEach(chartDiv => {
+                if (chartDiv._fullLayout) { // Check if it's a plotly graph
+                    Plotly.Plots.resize(chartDiv);
+                }
+            });
+        }
+
+        // Resize charts when the window is resized
+        window.addEventListener('resize', resizePlotlyCharts);
+
+        // Resize charts after the sidebar animation is complete
+        mainContent.addEventListener('transitionend', resizePlotlyCharts);
+    </script>
+</body>
+</html>
