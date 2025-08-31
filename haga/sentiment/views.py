@@ -7,6 +7,28 @@ from ml_model import visualizations as viz
 
 from ml_model.sentiment_model import senty_pred
 
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+import json
+
+from ml_model.misinformation import verify_news
+@require_POST
+def verify_news_api(request):
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+    except Exception:
+        return JsonResponse({"error": "Invalid JSON body."}, status=400)
+
+    text = (data.get("text") or "").strip()
+    if not text:
+        return JsonResponse({"error": "Text is required."}, status=400)
+
+    try:
+        result = verify_news(text)
+        return JsonResponse(result, status=200)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
 def ha(request):
    return render(request, "index.html")
 

@@ -286,5 +286,119 @@ button:hover {
             }
         });
     </script>
+    <!-- === Misinformation Check (Beta) === -->
+<section style="margin-top:2rem; padding:1rem; border:1px solid #e5e7eb; border-radius:12px;">
+  <h2 style="margin:0 0 0.5rem 0;">Misinformation Check <small style="opacity:.6">(beta)</small></h2>
+  <p style="margin:0 0 1rem 0; opacity:.8;">Enter a claim or news headline. We’ll classify it and try to cross-check with recent news snippets.</p>
+
+  <div style="display:grid; gap:0.75rem;">
+    <textarea id="misinfo-text" rows="3" placeholder="e.g., 'Cure for cancer found in common herb!'"
+      style="width:100%; padding:0.75rem; border:1px solid #d1d5db; border-radius:10px;"></textarea>
+
+    <div style="display:flex; gap:.5rem; align-items:center;">
+      <button id="misinfo-btn" type="button"
+        style="padding:0.6rem 1rem; border:none; border-radius:999px; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,.06);">
+        Verify claim
+      </button>
+      <span id="misinfo-status" style="font-size:0.9rem; opacity:.8;"></span>
+    </div>
+
+    <div id="misinfo-result" style="display:none; gap:0.5rem; margin-top:0.5rem;">
+      <div style="padding:0.75rem 1rem; border:1px solid #e5e7eb; border-radius:10px;">
+        <strong>Final:</strong> <span id="misinfo-final">—</span><br>
+        <small>Model: <span id="misinfo-model">—</span> · Stance: <span id="misinfo-stance">—</span></small>
+      </div>
+
+      <div style="padding:0.75rem 1rem; border:1px solid #e5e7eb; border-radius:10px;">
+        <strong>Keywords:</strong>
+        <div id="misinfo-keywords" style="display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.35rem;"></div>
+      </div>
+    </div>
+
+    <div id="misinfo-sources-wrap" style="display:none; margin-top:0.5rem;">
+      <strong>Supporting news:</strong>
+      <ul id="misinfo-sources" style="margin:0.5rem 0 0 1rem; display:grid; gap:.5rem;"></ul>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Get CSRF token from cookie (Django default)
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+  }
+  const csrftoken = getCookie('csrftoken');
+
+  const btn = document.getElementById('misinfo-btn');
+  const statusEl = document.getElementById('misinfo-status');
+  const resultBox = document.getElementById('misinfo-result');
+  const sourcesWrap = document.getElementById('misinfo-sources-wrap');
+
+  btn.addEventListener('click', async () => {
+    const text = (document.getElementById('misinfo-text').value || '').trim();
+    if (!text) { alert('Please enter a claim/headline.'); return; }
+
+    btn.disabled = true;
+    statusEl.textContent = 'Checking...';
+    resultBox.style.display = 'none';
+    sourcesWrap.style.display = 'none';
+
+    try {
+      const resp = await fetch("{% url 'verify_news_api' %}", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrftoken || ''
+        },
+        body: JSON.stringify({ text })
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || 'Failed to verify');
+
+      // Update labels
+      document.getElementById('misinfo-final').textContent = data.final_label || '—';
+      document.getElementById('misinfo-model').textContent = data.model_label || '—';
+      document.getElementById('misinfo-stance').textContent = data.stance_label || '—';
+
+      // Keywords
+      const chips = document.getElementById('misinfo-keywords');
+      chips.innerHTML = '';
+      (data.keywords || []).forEach(k => {
+        const el = document.createElement('span');
+        el.textContent = k;
+        el.style.padding = '0.2rem 0.6rem';
+        el.style.border = '1px solid #e5e7eb';
+        el.style.borderRadius = '999px';
+        el.style.fontSize = '0.85rem';
+        chips.appendChild(el);
+      });
+
+      // Sources
+      const ul = document.getElementById('misinfo-sources');
+      ul.innerHTML = '';
+      (data.news || []).forEach(n => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <a href="${n.link || '#'}" target="_blank" rel="noopener">${n.title || n.source || 'Source'}</a>
+          ${n.source ? ' — ' + n.source : ''} ${n.date ? ' <small>(' + n.date + ')</small>' : ''}
+          ${n.snippet ? '<div style="opacity:.8; margin-top:.15rem;">' + n.snippet + '</div>' : ''}
+        `;
+        ul.appendChild(li);
+      });
+
+      resultBox.style.display = 'grid';
+      if ((data.news || []).length) sourcesWrap.style.display = 'block';
+      statusEl.textContent = '';
+    } catch (e) {
+      statusEl.textContent = e.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+</script>
+
+
 </body>
 </html>
