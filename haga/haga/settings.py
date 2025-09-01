@@ -58,7 +58,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-STATIC_ROOT = BASE_DIR / "staticfiles"  # for collectstatic
+#STATIC_ROOT = BASE_DIR / "staticfiles"  # for collectstatic
 
 ROOT_URLCONF = 'haga.urls'
 
@@ -133,11 +133,18 @@ STATICFILES_DIRS = [
 ]
 
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Whitenoise
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+
+# Tell Django where static files are located after collectstatic
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "web", "static")]         # add
+
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# At the bottom of settings.py
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
