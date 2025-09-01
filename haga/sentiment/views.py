@@ -25,11 +25,12 @@ from sklearn.preprocessing import LabelEncoder
 import plotly.io as pio
 import seaborn as sns
 
-#def ha(request):
+# def ha(request):
 #    return render(request, "index.html")
 
 def ha(request):
-    df = pd.read_csv(r"D:\hagothon\haga\ml_model\500.csv")
+    csv_path = os.path.join(settings.BASE_DIR, 'ml_model','500.csv')    
+    df = pd.read_csv(csv_path)
     df['Sentiment'] = df['Sentiment'].fillna('No Data')
 
     threat_keywords = [
@@ -86,7 +87,7 @@ def model(request):
 
 def dash(request):
     def load_data():
-        csv_path = os.path.join(settings.BASE_DIR, 'ml_model', '500.csv')
+        csv_path = os.path.join(settings.BASE_DIR, 'ml_model','500.csv')
         data = pd.read_csv(csv_path)
         data.columns = data.columns.str.strip()
         data['Districts'] = data['Districts'].str.lower()
