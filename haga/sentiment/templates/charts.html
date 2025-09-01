@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analysis Dashboard</title>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+{% load static %}
+<style>
+/* --- Google Fonts & Font Awesome Icons --- */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+
+/* Animations */
+@keyframes gradient-animation {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+    100% { transform: translateY(0px); }
+}
+
+:root {
+    --sidebar-bg: #2c3e50;
+    --main-bg: #f5f6fa;
+    --card-bg: rgba(255, 255, 255, 0.85);
+    --text-color: #34495e;
+    --text-light: #aeb6bf;
+    --text-light-hover: #ffffff;
+    --accent-color: #e73c7e;
+    --accent-hover: #ee7752;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --sidebar-width: 250px;
+}
+
+/* Layout */
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    color: var(--text-color);
+    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+    background-size: 400% 400%;
+    animation: gradient-animation 18s ease infinite;
+    overflow-x: hidden;
+}
+
+/* Floating Icons */
+.floating-icons {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: -1;
+}
+.floating-icons i {
+    position: absolute;
+    color: rgba(255,255,255,0.15);
+    font-size: 50px;
+    animation: float 10s infinite ease-in-out;
+}
+.floating-icons i:nth-child(1) { top: 10%; left: 15%; animation-duration: 12s; }
+.floating-icons i:nth-child(2) { top: 20%; left: 80%; animation-duration: 8s; }
+.floating-icons i:nth-child(3) { top: 70%; left: 10%; animation-duration: 15s; }
+.floating-icons i:nth-child(4) { top: 80%; left: 90%; animation-duration: 9s; }
+.floating-icons i:nth-child(5) { top: 40%; left: 50%; animation-duration: 11s; }
+
+/* Sidebar */
+.sidebar-container { position: fixed; top:0; left:0; height:100%; z-index:1000; }
+.menu-icon {
+    padding:1rem; color:white; font-size:1.5rem; cursor:pointer;
+    position:fixed; top:10px; left:10px; z-index:1001;
+    text-shadow:0 2px 5px rgba(0,0,0,0.2);
+}
+.sidebar {
+    width: var(--sidebar-width);
+    background-color: var(--sidebar-bg);
+    height: 100%;
+    padding-top: 1.5rem;
+    transform: translateX(-100%);
+    transition: transform 0.4s ease;
+}
+.sidebar-container.is-open .sidebar { transform: translateX(0); }
+.sidebar-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-light-hover);
+}
+.sidebar nav ul { list-style-type: none; padding:0; margin:0; }
+.sidebar nav a {
+    display:flex; align-items:center; gap:15px;
+    color: var(--text-light);
+    text-decoration: none;
+    padding: 1rem 1.5rem;
+    transition: all 0.3s ease;
+}
+.sidebar nav a:hover {
+    background-color: rgba(255,255,255,0.1);
+    color: var(--text-light-hover);
+    transform: translateX(10px);
+}
+.sidebar nav li.active > a {
+    background-color: rgba(231,60,126,0.2);
+    color: var(--text-light-hover);
+    border-right: 4px solid var(--accent-color);
+}
+
+/* Main Content */
+.main-content {
+    padding: 2rem 4rem;
+    margin-left: 70px;
+    width: calc(100% - 70px - 8rem);
+    transition: margin-left 0.4s ease;
+}
+.sidebar-container.is-open ~ .main-content {
+    margin-left: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width) - 8rem);
+}
+.page-header {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    color: white;
+    text-shadow: 0 2px 5px rgba(0,0,0);
+}
+
+/* Cards & Charts */
+.card {
+    width: 80%;              /* Chart cards take 80% width of page */
+    max-width: 900px;        /* Prevent being too large */
+    margin: 20px auto;
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px var(--shadow-color);
+    border: 1px solid rgba(255,255,255,0.2);
+    margin-bottom: 2rem;
+}
+.card h2 {
+    text-align: center;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+}
+.card img {
+    width: 100%;
+    height: auto;            /* maintain aspect ratio */
+    max-height: 600px;       /* optional: prevent overly tall */
+    object-fit: contain;     /* ensures whole chart is visible */
+    border-radius: 10px;
+    display: block;
+    margin: 0 auto;
+}
+
+
+/* Grid */
+.charts-grid { display:grid; grid-template-columns:1fr; gap:1.5rem; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    :root { --sidebar-width: 80vw; }
+    .main-content, .sidebar-container.is-open ~ .main-content {
+        margin-left: 0;
+        padding: 1rem;
+        padding-top: 5rem;
+        width: calc(100% - 2rem);
+    }
+    .page-header { font-size:1.5rem; }
+    .floating-icons i { font-size:30px; }
+}
+</style>
+</head>
+<body>
+    <div class="floating-icons">
+        <i class="fas fa-chart-pie"></i>
+        <i class="fas fa-comment-dots"></i>
+        <i class="fas fa-database"></i>
+        <i class="fas fa-magnifying-glass-chart"></i>
+        <i class="fas fa-robot"></i>
+    </div>
+
+    <div class="sidebar-container">
+        <div class="menu-icon"><i class="fas fa-bars"></i></div>
+        <aside class="sidebar">
+            <div class="sidebar-header">InsightDash</div>
+            <nav>
+                <ul>
+                    <li><a href="{% url 'ha' %}"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a href="{% url 'random' %}"><i class="fas fa-lightbulb"></i> Insights</a></li>
+                    <li><a href="{% url 'dash' %}"><i class="fas fa-chart-bar"></i> Dashboard</a></li>
+                    <li><a href="{% url 'dashboard' %}"><i class="fas fa-chart-bar"></i> Analysis Dashboard</a></li>
+                    <li><a href="{% url 'model' %}"><i class="fas fa-brain"></i> Sentiment Model</a></li>
+                </ul>
+            </nav>
+        </aside>
+    </div>
+
+    <main class="main-content">
+        <h1 class="page-header">📊 Social Media Analysis Dashboard</h1>
+
+        <div class="charts-grid">
+            <div class="card">
+                <h2>Engagement by Platform</h2>
+                <img src="data:image/png;base64,{{ chart1 }}">
+            </div>
+
+            <div class="card">
+                <h2>Sentiment vs Engagement</h2>
+                <img src="data:image/png;base64,{{ chart2 }}">
+            </div>
+
+            <div class="card">
+                <h2>Engagement by Post Type</h2>
+                <img src="data:image/png;base64,{{ chart3 }}">
+            </div>
+
+            <div class="card">
+                <h2>Feature Importance</h2>
+                <img src="data:image/png;base64,{{ chart4 }}">
+            </div>
+
+            {% if chart5 %}
+            <div class="card">
+                <h2>Top 5 Posts (ML Predicted Score)</h2>
+                <img src="data:image/png;base64,{{ chart5 }}">
+            </div>
+            {% endif %}
+
+            {% if chart6 %}
+            <div class="card">
+                <h2>Top 5 Posts (Baseline Score)</h2>
+                <img src="data:image/png;base64,{{ chart6 }}">
+            </div>
+            {% endif %}
+        </div>
+    </main>
+
+<script>
+    const menuIcon = document.querySelector('.menu-icon');
+    const sidebarContainer = document.querySelector('.sidebar-container');
+    const mainContent = document.querySelector('.main-content');
+
+    menuIcon.addEventListener('click', (event) => {
+        event.stopPropagation();
+        sidebarContainer.classList.toggle('is-open');
+    });
+    document.addEventListener('click', (event) => {
+        if (sidebarContainer.classList.contains('is-open') && !sidebarContainer.contains(event.target)) {
+            sidebarContainer.classList.remove('is-open');
+        }
+    });
+</script>
+</body>
+</html>

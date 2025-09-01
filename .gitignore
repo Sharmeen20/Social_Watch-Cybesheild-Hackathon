@@ -1,0 +1,13 @@
+# Python virtual environment
+real/
+
+# Python cache
+__pycache__/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Other unnecessary folders
+haga/lib/
+lib/

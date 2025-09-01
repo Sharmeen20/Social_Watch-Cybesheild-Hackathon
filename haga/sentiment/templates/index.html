@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InsightDash - Home</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+    --sidebar-bg: #2c3e50;
+    --main-bg: #f5f6fa;
+    --card-bg: rgba(255, 255, 255, 0.85);
+    --text-color: #34495e;
+    --text-light: #aeb6bf;
+    --text-light-hover: #ffffff;
+    --accent-color: #e73c7e;
+    --accent-hover: #ee7752;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --sidebar-width: 250px;
+    }
+
+    body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    color: var(--text-color);
+    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+    background-size: 400% 400%;
+    animation: gradient-animation 18s ease infinite;
+    overflow-x: hidden;
+    }
+
+    @keyframes gradient-animation {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+    }
+
+    @keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+    100% { transform: translateY(0px); }
+    }
+
+    .floating-icons { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+    .floating-icons i { position: absolute; color: rgba(255, 255, 255, 0.15); font-size: 50px; animation: float 10s infinite ease-in-out; }
+    .floating-icons i:nth-child(1) { top: 10%; left: 15%; animation-duration: 12s; }
+    .floating-icons i:nth-child(2) { top: 20%; left: 80%; animation-duration: 8s; }
+    .floating-icons i:nth-child(3) { top: 70%; left: 10%; animation-duration: 15s; }
+    .floating-icons i:nth-child(4) { top: 80%; left: 90%; animation-duration: 9s; }
+    .floating-icons i:nth-child(5) { top: 40%; left: 50%; animation-duration: 11s; }
+
+    .sidebar-container { position: fixed; top: 0; left: 0; height: 100%; z-index: 1000; }
+    .menu-icon { padding: 1rem; color: white; font-size: 1.5rem; cursor: pointer; position: fixed; top: 10px; left: 10px; z-index: 1001; }
+    .sidebar { width: var(--sidebar-width); background-color: var(--sidebar-bg); height: 100%; padding-top: 1.5rem; transform: translateX(-100%); transition: transform 0.4s ease; }
+    .sidebar-container.is-open .sidebar { transform: translateX(0); }
+    .sidebar-header { text-align: center; margin-bottom: 2rem; font-size: 1.5rem; font-weight: 700; color: var(--text-light-hover); }
+    .sidebar nav ul { list-style-type: none; padding: 0; margin: 0; }
+    .sidebar nav a { display: flex; align-items: center; gap: 15px; color: var(--text-light); text-decoration: none; padding: 1rem 1.5rem; transition: all 0.3s ease; }
+    .sidebar nav a:hover { background-color: rgba(255, 255, 255, 0.1); color: var(--text-light-hover); transform: translateX(10px); }
+    .sidebar nav li.active > a { background-color: rgba(231, 60, 126, 0.2); color: var(--text-light-hover); border-right: 4px solid var(--accent-color); }
+
+    .main-content { padding: 2rem; margin-left: 70px; transition: margin-left 0.4s ease; }
+    .sidebar-container.is-open ~ .main-content { margin-left: var(--sidebar-width); }
+
+    .page-header { font-size: 2rem; font-weight: 700; margin-bottom: 1rem; color: white; text-shadow: 0 2px 5px rgba(0,0,0); }
+    .sub-text { font-size: 1.2rem; color:black; margin-bottom: 1.5rem; }
+
+    .card {
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    padding: 1.5rem;
+    border-radius: 20px;
+    box-shadow: 0 8px 30px var(--shadow-color);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 2rem;
+    }
+
+    .stat-value { font-size: 2rem; font-weight: 700; text-align: center; }
+    .stat-label { font-size: 0.9rem; color: #555; text-align: center; }
+    .trend-up { color: #28a745; font-size: 0.85rem; text-align: center; }
+    .trend-down { color: #dc3545; font-size: 0.85rem; text-align: center; }
+
+    .feed-item { border-bottom: 1px solid #eee; padding: 10px 0; }
+    .feed-item:last-child { border-bottom: none; }
+    .hashtag-table { width: 100%; border-collapse: collapse; }
+    .hashtag-table td, .hashtag-table th { padding: 8px; font-size: 0.9rem; text-align: left; }
+
+    button {
+    background: linear-gradient(45deg, var(--accent-color), var(--accent-hover));
+    color: white;
+    border: none;
+    cursor: pointer;
+    padding: 0.8rem 2rem;
+    font-weight: 600;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    }
+    button:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.2); }
+
+    @media (max-width: 768px) {
+    :root { --sidebar-width: 80vw; }
+    .main-content { margin-left: 0; padding: 1rem; }
+    .page-header { font-size: 1.5rem; }
+    .sub-text { font-size: 1rem; }
+    .floating-icons i { font-size: 30px; }
+    }
+
+    #hero:hover  { transform: translateY(-3px); box-shadow: 0 8px 15px rgb(0, 0, 0); }
+</style>
+</head>
+
+<body>
+<!-- Floating icons -->
+<div class="floating-icons">
+    <i class="fas fa-chart-pie"></i>
+    <i class="fas fa-comment-dots"></i>
+    <i class="fas fa-database"></i>
+    <i class="fas fa-magnifying-glass-chart"></i>
+    <i class="fas fa-robot"></i>
+</div>
+
+<!-- Sidebar -->
+<div class="sidebar-container">
+    <div class="menu-icon"><i class="fas fa-bars"></i></div>
+    <aside class="sidebar">
+    <div class="sidebar-header">InsightDash</div>
+    <nav>
+        <ul>
+        <li class="active"><a href="{% url 'ha' %}"><i class="fas fa-home"></i> Home</a></li>
+        <li><a href={% url 'random' %}><i class="fas fa-lightbulb"></i> Insights</a></li>
+        <li><a href="{% url 'dash' %}"><i class="fas fa-chart-bar"></i> Dashboard</a></li>
+        <li><a href="{% url 'dashboard' %}"><i class="fas fa-chart-bar"></i> Analysis Dashboard</a></li>
+        <li><a href="{% url 'model' %}"><i class="fas fa-brain"></i> Sentiment Model</a></li>
+        </ul>
+    </nav>
+    </aside>
+</div>
+
+<!-- Main Content -->
+<main class="main-content">
+
+    <!-- Welcome Section -->
+    <div class="card" style="text-align:center;">
+    <h1 class="page-header">📊 Welcome to InsightDash</h1>
+    <p class="sub-text"><b>Discover powerful insights for Madhya Pradesh with real-time sentiment analysis, geographic mapping, and detailed engagement metrics.</b></p>
+    <a href="{% url 'dash' %}" style="text-decoration:none;"><button>View Dashboard</button></a>
+    </div>
+
+    <!-- Stats Row -->
+    <h1 class="page-header">📊 Home Overview</h1>
+    <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+    <div id="hero" class="card" style="flex:1; min-width:200px;">
+        <div class="stat-value">{{ total_posts}}</div>
+        <div class="stat-label">Total Posts</div>
+    </div>
+    <div id="hero" class="card" style="flex:1; min-width:200px;">
+        <div class="stat-value">{{ threats_detected}}</div>
+        <div class="stat-label">Threats Detected</div>
+    </div>
+    <div id="hero" class="card" style="flex:1; min-width:200px;">
+        <div class="stat-value">{{ overall_sentiment}}</div>
+        <div class="stat-label">Overall Sentiment</div>
+    </div>
+    </div>
+
+    <!-- Feed and Hashtags -->
+    <div style="display:flex; gap:1rem; flex-wrap:wrap; margin-top:2rem;">
+    <!-- Trending Threat Keywords -->
+    <div class="card" style="flex:1; min-width:300px; max-width:400px;">
+        <h5>Trending Threat Keywords</h5>
+        <table class="hashtag-table">
+        <thead>
+            <tr><th>Keyword</th><th>Detected Count</th></tr>
+        </thead>
+        <tbody>
+            {% for kw, count in keyword_counts.items %}
+            <tr>
+                <td>{{ kw }}</td>
+                <td>{{ count }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        </table>
+    </div>
+    </div>
+
+</main>
+
+<script>
+    const menuIcon = document.querySelector('.menu-icon');
+    const sidebarContainer = document.querySelector('.sidebar-container');
+    menuIcon.addEventListener('click', e => {
+    e.stopPropagation();
+    sidebarContainer.classList.toggle('is-open');
+    });
+    document.addEventListener('click', e => {
+    if (sidebarContainer.classList.contains('is-open') && !sidebarContainer.contains(e.target)) {
+        sidebarContainer.classList.remove('is-open');
+    }
+    });
+</script>
+</body>
+</html>
